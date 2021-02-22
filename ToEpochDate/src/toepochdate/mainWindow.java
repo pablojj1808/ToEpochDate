@@ -1,15 +1,18 @@
 package toepochdate;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.TimeZone;
+import java.time.format.DateTimeParseException;
 
 /**
  *
- * @author Pablo Jj
+ * @author Pablo Jj (pablojjinfo@gmail.com)
  */
 public class mainWindow extends javax.swing.JFrame {
 
@@ -17,15 +20,31 @@ public class mainWindow extends javax.swing.JFrame {
         initComponents();
         this.setResizable(false);
         this.setLocationRelativeTo(null);
+        jLabel3.setText("");
     }
 
     private long toEpochDate(String normalDate) {
-        LocalDate localdate = LocalDate.parse(
-                normalDate,
-                DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        );
-        ZoneId zone = ZoneId.of("Europe/Oslo");
-        return localdate.atStartOfDay(zone).toEpochSecond();
+        LocalDate localdate = null;
+        long out = 0;
+        try {
+            
+            localdate = LocalDate.parse(
+                    normalDate,
+                    DateTimeFormatter.ofPattern("dd-MM-yyyy")
+            );
+            
+            ZoneId zone = ZoneId.of("Europe/Oslo");
+            
+            out = localdate.atStartOfDay(zone).toEpochSecond();
+            this.setWarningMessage("");
+        } catch (DateTimeParseException e) {
+            this.setWarningMessage("Write correctly: dd-MM-yyyy");
+        }
+        return out;
+    }
+
+    private void setWarningMessage(String sms) {
+        jLabel3.setText(sms);
     }
 
     private String toNormalDate(long epoch) {
@@ -33,7 +52,6 @@ public class mainWindow extends javax.swing.JFrame {
                 Instant.ofEpochSecond(epoch),
                 ZoneId.systemDefault()
         );
-        System.out.println(ld);
         return ld.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
 
@@ -47,6 +65,7 @@ public class mainWindow extends javax.swing.JFrame {
         jTextField2 = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -80,6 +99,15 @@ public class mainWindow extends javax.swing.JFrame {
 
         jButton2.setFont(new java.awt.Font("Arial", 0, 24)); // NOI18N
         jButton2.setText("Copy");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel3.setText("jLabel3");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -91,13 +119,16 @@ public class mainWindow extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(jLabel2))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
-                    .addComponent(jTextField2))
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2)
-                    .addComponent(jButton1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                            .addComponent(jTextField2))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButton2)
+                            .addComponent(jButton1)))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 397, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -109,12 +140,14 @@ public class mainWindow extends javax.swing.JFrame {
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jButton2))
+                    .addComponent(jLabel2))
+                .addContainerGap())
         );
 
         pack();
@@ -123,18 +156,28 @@ public class mainWindow extends javax.swing.JFrame {
     private void jTextField2KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField2KeyPressed
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             jTextField1.setText(toEpochDate(jTextField2.getText()) + "");
+            
         }
+        
     }//GEN-LAST:event_jTextField2KeyPressed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        StringSelection stringSelection = new StringSelection(jTextField1.getText());
+        Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clpbrd.setContents(stringSelection, null);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        StringSelection stringSelection = new StringSelection(jTextField2.getText());
+        Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clpbrd.setContents(stringSelection, null);
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jTextField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyPressed
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             jTextField2.setText(toNormalDate(Long.parseLong(jTextField1.getText())));
         }
     }//GEN-LAST:event_jTextField1KeyPressed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        jTextField1.copy();
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     public static void main(String args[]) {
 
@@ -172,6 +215,7 @@ public class mainWindow extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
