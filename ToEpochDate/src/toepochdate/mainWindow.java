@@ -21,6 +21,15 @@ public class mainWindow extends javax.swing.JFrame {
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         jLabel3.setText("");
+        this.todaysDate();
+    }
+    
+    private void todaysDate() {
+        LocalDate localDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String formattedDate = localDate.format(formatter);
+        jTextField1.setText(toEpochDate(formattedDate) + "");
+        jTextField2.setText(formattedDate);
     }
 
     private long toEpochDate(String normalDate) {
@@ -73,7 +82,7 @@ public class mainWindow extends javax.swing.JFrame {
         jLabel1.setText("EpochDate");
 
         jLabel2.setFont(new java.awt.Font("Arial", 0, 24)); // NOI18N
-        jLabel2.setText("ISO Date");
+        jLabel2.setText("Normal Date");
 
         jTextField1.setFont(new java.awt.Font("Dialog", 0, 24)); // NOI18N
         jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
